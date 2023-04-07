@@ -165,21 +165,8 @@ impl Host<String> {
     }
 
     /// convert domain with idna
-    #[cfg(feature = "idna")]
     fn domain_to_ascii(domain: &str) -> Result<String, ParseError> {
         idna::domain_to_ascii(domain).map_err(Into::into)
-    }
-
-    /// checks domain is ascii
-    #[cfg(not(feature = "idna"))]
-    fn domain_to_ascii(domain: &str) -> Result<String, ParseError> {
-        // without idna feature, we can't verify that xn-- domains correctness
-        let domain = domain.to_lowercase();
-        if domain.is_ascii() && domain.split('.').all(|s| !s.starts_with("xn--")) {
-            Ok(domain)
-        } else {
-            Err(ParseError::InvalidDomainCharacter)
-        }
     }
 }
 
@@ -285,7 +272,7 @@ fn ends_in_a_number(input: &str) -> bool {
     } else {
         last
     };
-    if !last.is_empty() && last.chars().all(|c| ('0'..='9').contains(&c)) {
+    if !last.is_empty() && last.as_bytes().iter().all(|c| c.is_ascii_digit()) {
         return true;
     }
 
@@ -313,11 +300,9 @@ fn parse_ipv4number(mut input: &str) -> Result<Option<u32>, ()> {
     }
 
     let valid_number = match r {
-        8 => input.chars().all(|c| ('0'..='7').contains(&c)),
-        10 => input.chars().all(|c| ('0'..='9').contains(&c)),
-        16 => input.chars().all(|c| {
-            ('0'..='9').contains(&c) || ('a'..='f').contains(&c) || ('A'..='F').contains(&c)
-        }),
+        8 => input.as_bytes().iter().all(|c| (b'0'..=b'7').contains(c)),
+        10 => input.as_bytes().iter().all(|c| c.is_ascii_digit()),
+        16 => input.as_bytes().iter().all(|c| c.is_ascii_hexdigit()),
         _ => false,
     };
     if !valid_number {

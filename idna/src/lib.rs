@@ -33,10 +33,14 @@
 //! > allowing client software to access domains that are valid under either system.
 #![no_std]
 
-extern crate alloc;
-
+// For forwards compatibility
 #[cfg(feature = "std")]
 extern crate std;
+
+extern crate alloc;
+
+#[cfg(not(feature = "alloc"))]
+compile_error!("the `alloc` feature must be enabled");
 
 #[cfg(test)]
 #[macro_use]

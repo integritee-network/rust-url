@@ -5,87 +5,73 @@ on:
     branches: ["master"]
   pull_request:
 
+env:
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
+
 jobs:
   Test:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        rust: [1.45.0, stable, beta, nightly]
+        rust: [1.56.0, stable, beta, nightly]
         exclude:
           - os: macos-latest
-            rust: 1.45.0
+            rust: 1.56.0
           - os: windows-latest
-            rust: 1.45.0
+            rust: 1.56.0
           - os: macos-latest
             rust: beta
           - os: windows-latest
             rust: beta
           - os: macos-latest
-            rust: nightly
-          - os: windows-latest
             rust: nightly
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: ${{ matrix.rust }}
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --all-targets
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-features
-      - uses: actions-rs/cargo@v1
-        # --no-default-features only available since 1.51.0
-        if: matrix.rust != '1.45.0'
-        with:
-          command: test
-          args: --no-default-features
+      - run: cargo build --all-targets
+        # Run tests
+      - name: Run tests
+        run: cargo test
+        # Run tests enabling the serde feature
+      - name: Run tests with the serde feature
+        run: cargo test --features "url/serde,url/expose_internals"
+      # The #[debugger_visualizer] attribute is currently gated behind an unstable feature flag.
+      # In order to test the visualizers for the url crate, they have to be tested on a nightly build.
+      - name: Run debugger_visualizer tests
+        if: |
+          matrix.os == 'windows-latest' &&
+          matrix.rust == 'nightly'
+        run: cargo test --test debugger_visualizer --features "url/serde,url/debugger_visualizer" -- --test-threads=1
+      - name: Test `no_std` support
+        run: cargo test --no-default-features --features=alloc
 
   WASM:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          target: wasm32-unknown-unknown
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --target wasm32-unknown-unknown
+          targets: wasm32-unknown-unknown
+      - run: cargo build --target wasm32-unknown-unknown
 
   Lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
           components: rustfmt, clippy
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-      - uses: actions-rs/cargo@v1
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
         if: always()
-        with:
-          command: clippy
-          args: --workspace --all-targets -- -D warnings
 
   Audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - uses: EmbarkStudios/cargo-deny-action@v1

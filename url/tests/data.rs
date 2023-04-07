@@ -15,28 +15,23 @@ use url::{quirks, Url};
 
 #[test]
 fn urltestdata() {
-    #[cfg(not(feature = "idna"))]
-    let idna_skip_inputs = [
-        "http://www.foo。bar.com",
-        "http://Ｇｏ.com",
-        "http://你好你好",
-        "https://faß.ExAmPlE/",
-        "http://０Ｘｃ０．０２５０．０１",
-        "ftp://%e2%98%83",
-        "https://%e2%98%83",
-        "file://a\u{ad}b/p",
-        "file://a%C2%ADb/p",
-        "http://GOO\u{200b}\u{2060}\u{feff}goo.com",
-    ];
-
     // Copied from https://github.com/web-platform-tests/wpt/blob/master/url/
     let mut json = Value::from_str(include_str!("urltestdata.json"))
         .expect("JSON parse error in urltestdata.json");
 
     let mut passed = true;
+    let mut skip_next = false;
     for entry in json.as_array_mut().unwrap() {
         if entry.is_string() {
+            if entry.as_str().unwrap() == "skip next" {
+                skip_next = true;
+            }
             continue; // ignore comments
+        }
+
+        if skip_next {
+            skip_next = false;
+            continue;
         }
 
         let maybe_base = entry
@@ -45,13 +40,6 @@ fn urltestdata() {
             .maybe_string();
         let input = entry.take_string("input");
         let failure = entry.take_key("failure").is_some();
-
-        #[cfg(not(feature = "idna"))]
-        {
-            if idna_skip_inputs.contains(&input.as_str()) {
-                continue;
-            }
-        }
 
         let res = if let Some(base) = maybe_base {
             let base = match Url::parse(&base) {
@@ -133,7 +121,6 @@ fn setters_tests() {
         let mut tests = json.take_key(attr).unwrap();
         for mut test in tests.as_array_mut().unwrap().drain(..) {
             let comment = test.take_key("comment").map(|s| s.string());
-            #[cfg(not(feature = "idna"))]
             {
                 if let Some(comment) = comment.as_ref() {
                     if comment.starts_with("IDNA Nontransitional_Processing") {
@@ -149,7 +136,7 @@ fn setters_tests() {
             let mut url = Url::parse(&href).unwrap();
             let comment_ref = comment.as_deref();
             passed &= check_invariants(&url, &name, comment_ref);
-            let _ = set(&mut url, attr, &new_value);
+            set(&mut url, attr, &new_value);
 
             for attr in ATTRIBS {
                 if let Some(value) = expected.take_key(attr) {
@@ -231,7 +218,7 @@ fn get<'a>(url: &'a Url, attr: &str) -> &'a str {
 }
 
 #[allow(clippy::unit_arg)]
-fn set<'a>(url: &'a mut Url, attr: &str, new: &str) {
+fn set(url: &mut Url, attr: &str, new: &str) {
     let _ = match attr {
         "protocol" => quirks::set_protocol(url, new),
         "username" => quirks::set_username(url, new),

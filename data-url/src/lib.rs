@@ -16,8 +16,15 @@
 //! ```
 #![no_std]
 
+// For forwards compatibility
+#[cfg(feature = "std")]
+extern crate std as _;
+
 #[macro_use]
 extern crate alloc;
+
+#[cfg(not(feature = "alloc"))]
+compile_error!("the `alloc` feature must be enabled");
 
 use alloc::{string::String, vec::Vec};
 
