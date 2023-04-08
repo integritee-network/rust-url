@@ -33,6 +33,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
+      # Add toolchain for no_std tests
+      - run: rustup target add aarch64-unknown-none
       - run: cargo build --all-targets
         # Run tests
       - name: Run tests
@@ -49,6 +51,8 @@ jobs:
         run: cargo test --test debugger_visualizer --features "url/serde,url/debugger_visualizer" -- --test-threads=1
       - name: Test `no_std` support
         run: cargo test --no-default-features --features=alloc
+      - name: Build `aarch64-unknown-none` with `no_std`
+        run: cargo +nightly build -Zbuild-std=core,alloc --target aarch64-unknown-none -v --release
 
   WASM:
     runs-on: ubuntu-latest
