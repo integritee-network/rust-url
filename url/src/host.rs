@@ -11,10 +11,13 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
+#[cfg(not(feature = "std"))]
+use core::net::{Ipv4Addr, Ipv6Addr};
 use core::{
     cmp,
     fmt::{self, Formatter},
 };
+#[cfg(feature = "std")]
 use std::net::{Ipv4Addr, Ipv6Addr};
 
 use percent_encoding::{percent_decode, utf8_percent_encode, CONTROLS};
