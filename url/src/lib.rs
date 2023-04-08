@@ -130,6 +130,15 @@ url = { version = "2", features = ["serde"] }
 
 pub use form_urlencoded;
 
+// For forwards compatibility
+#[cfg(feature = "std")]
+extern crate std;
+
+extern crate alloc;
+
+#[cfg(not(feature = "alloc"))]
+compile_error!("the `alloc` feature must be enabled");
+
 #[cfg(feature = "serde")]
 extern crate serde;
 
@@ -1317,9 +1326,23 @@ impl Url {
     ///
     /// ```
     /// use url::Url;
-    /// # use std::error::Error;
     ///
-    /// # fn run() -> Result<(), Box<dyn Error>> {
+    /// # use url::ParseError;
+    /// # #[derive(Debug)]
+    /// # /// A simple wrapper error struct for `no_std` support
+    /// # struct TestError;
+    /// # impl From<ParseError> for TestError {
+    /// #   fn from(value: ParseError) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
+    /// # impl From<&str> for TestError {
+    /// #   fn from(value: &str) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
+    ///
+    /// # fn run() -> Result<(), TestError> {
     /// let url = Url::parse("https://example.com/foo/bar")?;
     /// let mut path_segments = url.path_segments().ok_or_else(|| "cannot be base")?;
     /// assert_eq!(path_segments.next(), Some("foo"));
@@ -1724,9 +1747,22 @@ impl Url {
     ///
     /// ```
     /// use url::Url;
-    /// # use std::error::Error;
+    /// # use url::ParseError;
+    /// # #[derive(Debug)]
+    /// # /// A simple wrapper error struct for `no_std` support
+    /// # struct TestError;
+    /// # impl From<ParseError> for TestError {
+    /// #   fn from(value: ParseError) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
+    /// # impl From<&str> for TestError {
+    /// #   fn from(value: &str) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
     ///
-    /// # fn run() -> Result<(), Box<dyn Error>> {
+    /// # fn run() -> Result<(), TestError> {
     /// let mut url = Url::parse("ssh://example.net:2048/")?;
     ///
     /// url.set_port(Some(4096)).map_err(|_| "cannot be base")?;
@@ -1743,9 +1779,22 @@ impl Url {
     ///
     /// ```rust
     /// use url::Url;
-    /// # use std::error::Error;
+    /// # use url::ParseError;
+    /// # #[derive(Debug)]
+    /// # /// A simple wrapper error struct for `no_std` support
+    /// # struct TestError;
+    /// # impl From<ParseError> for TestError {
+    /// #   fn from(value: ParseError) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
+    /// # impl From<&str> for TestError {
+    /// #   fn from(value: &str) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
     ///
-    /// # fn run() -> Result<(), Box<dyn Error>> {
+    /// # fn run() -> Result<(), TestError> {
     /// let mut url = Url::parse("https://example.org/")?;
     ///
     /// url.set_port(Some(443)).map_err(|_| "cannot be base")?;
@@ -2428,7 +2477,10 @@ impl Url {
     /// ```
     ///
     /// This method is only available if the `std` Cargo feature is enabled.
-    #[cfg(all(feature = "std", any(unix, windows, target_os = "redox", target_os = "wasi")))]
+    #[cfg(all(
+        feature = "std",
+        any(unix, windows, target_os = "redox", target_os = "wasi")
+    ))]
     #[allow(clippy::result_unit_err)]
     pub fn from_file_path<P: AsRef<Path>>(path: P) -> Result<Url, ()> {
         let mut serialization = "file://".to_owned();
@@ -2467,7 +2519,10 @@ impl Url {
     /// and usually does not include them (e.g. in `Path::parent()`).
     ///
     /// This method is only available if the `std` Cargo feature is enabled.
-    #[cfg(all(feature = "std", any(unix, windows, target_os = "redox", target_os = "wasi")))]
+    #[cfg(all(
+        feature = "std",
+        any(unix, windows, target_os = "redox", target_os = "wasi")
+    ))]
     #[allow(clippy::result_unit_err)]
     pub fn from_directory_path<P: AsRef<Path>>(path: P) -> Result<Url, ()> {
         let mut url = Url::from_file_path(path)?;
@@ -2586,7 +2641,10 @@ impl Url {
     ///
     /// This method is only available if the `std` Cargo feature is enabled.
     #[inline]
-    #[cfg(all(feature = "std", any(unix, windows, target_os = "redox", target_os = "wasi")))]
+    #[cfg(all(
+        feature = "std",
+        any(unix, windows, target_os = "redox", target_os = "wasi")
+    ))]
     #[allow(clippy::result_unit_err)]
     pub fn to_file_path(&self) -> Result<PathBuf, ()> {
         if let Some(segments) = self.path_segments() {
@@ -2902,7 +2960,6 @@ fn file_url_segments_to_pathbuf(
     host: Option<&str>,
     segments: str::Split<'_, char>,
 ) -> Result<PathBuf, ()> {
-    use alloc::vec::Vec;
     use percent_encoding::percent_decode;
     use std::ffi::OsStr;
     #[cfg(any(unix, target_os = "redox"))]

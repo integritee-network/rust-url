@@ -11,6 +11,7 @@
 use std::borrow::Cow;
 use std::cell::{Cell, RefCell};
 use std::net::{Ipv4Addr, Ipv6Addr};
+#[cfg(feature = "std")]
 use std::path::{Path, PathBuf};
 use url::{form_urlencoded, Host, Origin, Url};
 
@@ -117,6 +118,10 @@ fn test_set_empty_query() {
     assert_eq!(base.as_str(), "moz://example.com/path");
 }
 
+#[cfg(all(
+    feature = "std",
+    any(unix, windows, target_os = "redox", target_os = "wasi")
+))]
 macro_rules! assert_from_file_path {
     ($path: expr) => {
         assert_from_file_path!($path, $path)
@@ -130,6 +135,7 @@ macro_rules! assert_from_file_path {
 }
 
 #[test]
+#[cfg(feature = "std")]
 fn new_file_paths() {
     if cfg!(unix) {
         assert_eq!(Url::from_file_path(Path::new("relative")), Err(()));
@@ -150,7 +156,7 @@ fn new_file_paths() {
 }
 
 #[test]
-#[cfg(unix)]
+#[cfg(all(feature = "std", unix))]
 fn new_path_bad_utf8() {
     use std::ffi::OsStr;
     use std::os::unix::prelude::*;
@@ -161,6 +167,10 @@ fn new_path_bad_utf8() {
 }
 
 #[test]
+#[cfg(all(
+    feature = "std",
+    any(unix, windows, target_os = "redox", target_os = "wasi")
+))]
 fn new_path_windows_fun() {
     if cfg!(windows) {
         assert_from_file_path!(r"C:\foo\bar", "/C:/foo/bar");
@@ -183,6 +193,10 @@ fn new_path_windows_fun() {
 }
 
 #[test]
+#[cfg(all(
+    feature = "std",
+    any(unix, windows, target_os = "redox", target_os = "wasi")
+))]
 fn new_directory_paths() {
     if cfg!(unix) {
         assert_eq!(Url::from_directory_path(Path::new("relative")), Err(()));
@@ -438,7 +452,7 @@ fn issue_61() {
 }
 
 #[test]
-#[cfg(not(windows))]
+#[cfg(all(feature = "std", any(unix, target_os = "redox", target_os = "wasi")))]
 /// https://github.com/servo/rust-url/issues/197
 fn issue_197() {
     let mut url = Url::from_file_path("/").expect("Failed to parse path");
@@ -622,6 +636,7 @@ fn test_origin_unicode_serialization() {
 }
 
 #[test]
+#[cfg(feature = "std")]
 fn test_socket_addrs() {
     use std::net::ToSocketAddrs;
 
@@ -803,6 +818,7 @@ fn test_expose_internals() {
 }
 
 #[test]
+#[cfg(feature = "std")]
 fn test_windows_unc_path() {
     if !cfg!(windows) {
         return;
@@ -927,8 +943,8 @@ fn test_url_from_file_path() {
 }
 
 /// https://github.com/servo/rust-url/issues/505
-#[cfg(not(windows))]
 #[test]
+#[cfg(all(feature = "std", not(windows)))]
 fn test_url_from_file_path() {
     use std::path::PathBuf;
     use url::Url;

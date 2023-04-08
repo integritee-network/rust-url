@@ -6,7 +6,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use alloc::borrow::ToOwned;
 use alloc::string::{String, ToString};
 use core::fmt::{self, Formatter, Write};
 use core::str;

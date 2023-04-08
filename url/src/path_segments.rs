@@ -20,9 +20,22 @@ use core::str;
 ///
 /// ```rust
 /// use url::Url;
-/// # use std::error::Error;
+/// # use url::ParseError;
+/// # #[derive(Debug)]
+/// # /// A simple wrapper error struct for `no_std` support
+/// # struct TestError;
+/// # impl From<ParseError> for TestError {
+/// #   fn from(value: ParseError) -> Self {
+/// #       TestError {}
+/// #   }
+/// # }
+/// # impl From<&str> for TestError {
+/// #   fn from(value: &str) -> Self {
+/// #       TestError {}
+/// #   }
+/// # }
 ///
-/// # fn run() -> Result<(), Box<dyn Error>> {
+/// # fn run() -> Result<(), TestError> {
 /// let mut url = Url::parse("mailto:me@example.com")?;
 /// assert!(url.path_segments_mut().is_err());
 ///
@@ -79,9 +92,22 @@ impl<'a> PathSegmentsMut<'a> {
     ///
     /// ```rust
     /// use url::Url;
-    /// # use std::error::Error;
+    /// # use url::ParseError;
+    /// # #[derive(Debug)]
+    /// # /// A simple wrapper error struct for `no_std` support
+    /// # struct TestError;
+    /// # impl From<ParseError> for TestError {
+    /// #   fn from(value: ParseError) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
+    /// # impl From<&str> for TestError {
+    /// #   fn from(value: &str) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
     ///
-    /// # fn run() -> Result<(), Box<dyn Error>> {
+    /// # fn run() -> Result<(), TestError> {
     /// let mut url = Url::parse("https://github.com/servo/rust-url/")?;
     /// url.path_segments_mut().map_err(|_| "cannot be base")?
     ///     .clear().push("logout");
@@ -107,9 +133,22 @@ impl<'a> PathSegmentsMut<'a> {
     ///
     /// ```rust
     /// use url::Url;
-    /// # use std::error::Error;
+    /// # use url::ParseError;
+    /// # #[derive(Debug)]
+    /// # /// A simple wrapper error struct for `no_std` support
+    /// # struct TestError;
+    /// # impl From<ParseError> for TestError {
+    /// #   fn from(value: ParseError) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
+    /// # impl From<&str> for TestError {
+    /// #   fn from(value: &str) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
     ///
-    /// # fn run() -> Result<(), Box<dyn Error>> {
+    /// # fn run() -> Result<(), TestError> {
     /// let mut url = Url::parse("https://github.com/servo/rust-url/")?;
     /// url.path_segments_mut().map_err(|_| "cannot be base")?
     ///     .push("pulls");
@@ -182,9 +221,22 @@ impl<'a> PathSegmentsMut<'a> {
     ///
     /// ```rust
     /// use url::Url;
-    /// # use std::error::Error;
+    /// # use url::ParseError;
+    /// # #[derive(Debug)]
+    /// # /// A simple wrapper error struct for `no_std` support
+    /// # struct TestError;
+    /// # impl From<ParseError> for TestError {
+    /// #   fn from(value: ParseError) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
+    /// # impl From<&str> for TestError {
+    /// #   fn from(value: &str) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
     ///
-    /// # fn run() -> Result<(), Box<dyn Error>> {
+    /// # fn run() -> Result<(), TestError> {
     /// let mut url = Url::parse("https://github.com/")?;
     /// let org = "servo";
     /// let repo = "rust-url";
@@ -202,9 +254,22 @@ impl<'a> PathSegmentsMut<'a> {
     ///
     /// ```rust
     /// use url::Url;
-    /// # use std::error::Error;
+    /// # use url::ParseError;
+    /// # #[derive(Debug)]
+    /// # /// A simple wrapper error struct for `no_std` support
+    /// # struct TestError;
+    /// # impl From<ParseError> for TestError {
+    /// #   fn from(value: ParseError) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
+    /// # impl From<&str> for TestError {
+    /// #   fn from(value: &str) -> Self {
+    /// #       TestError {}
+    /// #   }
+    /// # }
     ///
-    /// # fn run() -> Result<(), Box<dyn Error>> {
+    /// # fn run() -> Result<(), TestError> {
     /// let mut url = Url::parse("https://github.com/servo")?;
     /// url.path_segments_mut().map_err(|_| "cannot be base")?
     ///     .extend(&["..", "rust-url", ".", "pulls"]);
