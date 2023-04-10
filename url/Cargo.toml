@@ -36,7 +36,7 @@ serde = {version = "1.0", optional = true, features = ["derive"]}
 [features]
 default = ["std"]
 std = ["idna/std", "percent-encoding/std", "form_urlencoded/std", "alloc"]
-alloc = []
+alloc = ["idna/alloc", "percent-encoding/alloc", "form_urlencoded/alloc"]
 # UNSTABLE FEATURES (requires Rust nightly)
 # Enable to use the #[debugger_visualizer] attribute.
 debugger_visualizer = []

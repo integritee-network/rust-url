@@ -2966,6 +2966,7 @@ fn file_url_segments_to_pathbuf(
     host: Option<&str>,
     segments: str::Split<'_, char>,
 ) -> Result<PathBuf, ()> {
+    use alloc::vec::Vec;
     use percent_encoding::percent_decode;
     use std::ffi::OsStr;
     #[cfg(any(unix, target_os = "redox"))]
