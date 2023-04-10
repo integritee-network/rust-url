@@ -8,9 +8,9 @@
 
 //! Unit tests
 
+use core::cell::{Cell, RefCell};
+use no_std_net::{Ipv4Addr, Ipv6Addr};
 use std::borrow::Cow;
-use std::cell::{Cell, RefCell};
-use std::net::{Ipv4Addr, Ipv6Addr};
 #[cfg(feature = "std")]
 use std::path::{Path, PathBuf};
 use url::{form_urlencoded, Host, Origin, Url};
